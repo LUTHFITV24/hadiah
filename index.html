@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>hadiah</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Poppins", sans-serif;
+        background: linear-gradient(135deg, #ffc0cb 0%, #fffdd0 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+      }
+
+      /* --- Gift / Kado --- */
+      .gift-container {
+        width: 200px;
+        height: 200px;
+        position: relative;
+        margin: 20px auto;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+      .gift-box {
+        width: 120px;
+        height: 120px;
+        background: #ff69b4;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(1);
+        border-radius: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 2em;
+        transition: transform 0.5s ease, opacity 0.5s ease;
+        box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+        z-index: 3;
+      }
+      .gift-lid {
+        width: 140px;
+        height: 28px;
+        position: absolute;
+        top: -20px;
+        left: 50%;
+        transform: translate(-50%, 0);
+        background: #ff1493;
+        border-radius: 10px 10px 0 0;
+        transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        z-index: 4;
+      }
+      .gift-ribbon {
+        height: 120px;
+        width: 20px;
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, 0);
+        background: #ffd700;
+        z-index: 2;
+      }
+      .click-counter {
+        font-size: 1.3em;
+        color: #ff69b4;
+        margin-top: 20px;
+        text-align: center;
+        font-weight: 600;
+      }
+      .instruction {
+        text-align: center;
+        font-size: 1.1em;
+        margin-top: 10px;
+        color: #333;
+      }
+
+      #confetti-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+      }
+
+      /* Modal style */
+      dialog {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: none;
+        border-radius: 24px;
+        padding: 30px 20px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+        max-width: 600px;
+        width: 90%;
+        background: #fff9d7;
+        text-align: center;
+        color: #000;
+      }
+
+      dialog h1,
+      dialog h2 {
+        color: #ff69b4;
+        font-weight: bold;
+      }
+
+      /* Tombol */
+      .btn {
+        border: none;
+        padding: 10px 22px;
+        border-radius: 25px;
+        font-size: 1em;
+        font-weight: 500;
+        margin: 10px;
+        cursor: pointer;
+        transition: transform 0.2s ease, opacity 0.2s ease;
+      }
+      .btn:hover {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
+      .next-btn {
+        background: #ffd700;
+        color: black;
+      }
+      .prev-btn {
+        background: #ff69b4;
+        color: white;
+      }
+      #closeModal {
+        background: #ff69b4;
+        color: white;
+      }
+
+      .slide {
+        display: none;
+      }
+      .slide.active {
+        display: block;
+      }
+      .photo-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .photo-preview {
+        width: 100%;
+        border-radius: 8px;
+      }
+      .btn {
+        background: #ff69b4;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        margin: 10px;
+        cursor: pointer;
+      }
+      .main-btn {
+        display: none;
+        margin-top: 20px;
+        background: #ff69b4;
+        color: white;
+        border: none;
+        border-radius: 25px;
+        padding: 15px 30px;
+        cursor: pointer;
+        font-size: 1.1em;
+      }
+
+      /* Efek kursor typewriter */
+      .typewriter {
+        display: inline-block;
+        border-right: 3px solid #ff69b4;
+        white-space: nowrap;
+        overflow: hidden;
+        animation: blinkCursor 0.7s steps(1) infinite;
+      }
+
+      @keyframes blinkCursor {
+        50% {
+          border-color: transparent;
+        }
+      }
+
+      @keyframes fadein {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- GIFT INTRO -->
+    <div id="giftIntro">
+      <div class="gift-container" id="giftContainer" aria-label="Kado kejutan">
+        <div
+          class="gift-box"
+          id="giftBox"
+          tabindex="0"
+          title="Klik untuk membuka kado"
+        >
+          <div class="gift-lid" id="giftLid"></div>
+          <div class="gift-ribbon"></div>
+          🎁
+        </div>
+      </div>
+      <div class="click-counter" id="clickCounter">Klik: 0/4</div>
+      <div class="instruction" id="instruction">
+        Klik kado di atas sebanyak 4 kali untuk meledakkan kejutan! 🎉
+      </div>
+    </div>
+
+    <!-- Button untuk memulai ucapan -->
+    <button class="main-btn" id="openModal">Klik untuk Ucapan! 🎉</button>
+
+    <!-- Modal -->
+    <dialog class="modal" id="birthdayModal" role="dialog" aria-modal="true">
+      <div class="modal-content" tabindex="-1">
+        <div class="slides-container">
+          <div class="slide active" id="slide1">
+            <h1 class="greeting" id="greeting-text">
+              Selamat Ulang Tahun, Eca!
+            </h1>
+            <p class="message" id="message-text">
+              Semoga hari spesialmu penuh kebahagiaan dan kejutan indah. 🥳
+            </p>
+            <div class="nav-buttons">
+              <button class="btn next-btn" onclick="changeSlide(2)">
+                Lanjut
+              </button>
+            </div>
+          </div>
+          <div class="slide" id="slide2">
+            <h2>Foto Kenangan (1/2)</h2>
+            <div class="photo-grid">
+              <img src="images/foto_kecil4.jpg" class="photo-preview" />
+              <img src="images/foto_kecil3.jpg" class="photo-preview" />
+              <img src="images/foto_kecil2.jpg" class="photo-preview" />
+              <img src="images/foto_kecil1.jpg" class="photo-preview" />
+            </div>
+            <div class="nav-buttons">
+              <button class="btn prev-btn" onclick="changeSlide(1)">
+                Kembali</button
+              ><button class="btn next-btn" onclick="changeSlide(3)">
+                Lanjut
+              </button>
+            </div>
+          </div>
+          <div class="slide" id="slide3">
+            <h2>Foto Kenangan (2/2)</h2>
+            <div class="photo-grid">
+              <img src="images/remaja1.jpg" class="photo-preview" />
+              <img src="images/remaja2.jpg" class="photo-preview" />
+              <img src="images/remaja3.jpg" class="photo-preview" />
+              <img src="images/remaja4.jpg" class="photo-preview" />
+            </div>
+            <div class="nav-buttons">
+              <button class="btn prev-btn" onclick="changeSlide(2)">
+                Kembali</button
+              ><button class="btn next-btn" onclick="changeSlide(4)">
+                Lanjut
+              </button>
+            </div>
+          </div>
+          <div class="slide" id="slide4">
+            <h2>Ucapan Doa</h2>
+            <p class="message" id="doa-text">
+              Hapyy birthday anak Yudi Semoga kamu tambah dewasa, bisa lebih
+              ngerti , ga banyak tingkah, ga bedegong jan ngelawan orang tua,
+              tetep jadi eca yang aku kenal yaaa.
+            </p>
+            <div class="nav-buttons">
+              <button class="btn prev-btn" onclick="changeSlide(3)">
+                Kembali</button
+              ><button class="btn next-btn" onclick="changeSlide(5)">
+                Lanjut
+              </button>
+            </div>
+          </div>
+          <div class="slide" id="slide5">
+            <h2>Harapan</h2>
+            <p class="message" id="harapan-text">
+              Yang aku harapin di umur kamu yang baru ini, kamu makin bahagia,
+              makin kuat, ga cengeng, ga susah makan. Semoga semua hal yang kamu
+              mau pelan-pelan terwujud, dan kamu selalu dikelilingi orang yang
+              baik dan tetep jadi eca yang aku kenal.
+            </p>
+            <div class="nav-buttons">
+              <button class="btn prev-btn" onclick="changeSlide(4)">
+                Kembali
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="nav-buttons">
+          <button class="btn" id="closeModal">Tutup</button>
+        </div>
+      </div>
+    </dialog>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <script>
+      const audioClick = new Audio(
+        "data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+Dyvmwh"
+      );
+      audioClick.volume = 0.28;
+
+      const giftBox = document.getElementById("giftBox");
+      const giftLid = document.getElementById("giftLid");
+      const clickCounter = document.getElementById("clickCounter");
+      const instruction = document.getElementById("instruction");
+      const openBtn = document.getElementById("openModal");
+      let clickCount = 0;
+      const maxClicks = 4;
+      let currentScale = 1.0;
+
+      const canvas = document.getElementById("confetti-canvas");
+      const ctx = canvas.getContext("2d");
+      function resizeCanvas() {
+        canvas.width = innerWidth;
+        canvas.height = innerHeight;
+      }
+      resizeCanvas();
+      addEventListener("resize", resizeCanvas);
+      let particles = [],
+        confettiActive = false;
+
+      function createConfetti(amount = 120) {
+        particles = [];
+        for (let i = 0; i < amount; i++) {
+          particles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * -canvas.height,
+            vx: (Math.random() - 0.5) * 8,
+            vy: Math.random() * 4 + 4,
+            color: `hsl(${Math.random() * 360},70%,60%)`,
+            size: Math.random() * 6 + 4,
+            rot: Math.random() * 360,
+            vr: (Math.random() - 0.5) * 0.2,
+          });
+        }
+      }
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (confettiActive) {
+          particles.forEach((p) => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.08;
+            p.rot += p.vr * 10;
+            if (p.y > canvas.height + 50) {
+              p.y = -10;
+              p.x = Math.random() * canvas.width;
+              p.vy = Math.random() * 3 + 2;
+            }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rot * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.6);
+            ctx.restore();
+          });
+        }
+        requestAnimationFrame(animateConfetti);
+      }
+      animateConfetti();
+
+      function handleClick() {
+        audioClick.play().catch(() => {});
+        clickCount++;
+        clickCounter.textContent = `Klik: ${clickCount}/${maxClicks}`;
+        if (clickCount < maxClicks) {
+          currentScale += 0.25;
+          giftBox.style.transform = `translate(-50%,-50%) scale(${currentScale}) rotate(${
+            clickCount * 6
+          }deg)`;
+        } else {
+          currentScale = 2.0;
+          giftBox.style.transform = `translate(-50%,-50%) scale(${currentScale}) rotate(12deg)`;
+          setTimeout(explodeGift, 450);
+        }
+      }
+
+      function explodeGift() {
+        giftLid.style.transform = "translate(-50%,-120px) rotate(720deg)";
+        giftBox.style.opacity = "0";
+        instruction.innerHTML = "<strong>BOOM! 🎉</strong><br>Kejutan meledak!";
+        createConfetti(180);
+        confettiActive = true;
+        setTimeout(() => {
+          confettiActive = false;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          document.getElementById("giftIntro").style.display = "none";
+          openBtn.style.display = "inline-block";
+        }, 1600);
+      }
+
+      giftBox.addEventListener("click", handleClick);
+      giftBox.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          handleClick();
+        }
+      });
+
+      // ==== Typewriter Effect ====
+      function typeWriterEffect(element, text, speed = 100) {
+        element.innerHTML = "";
+        element.classList.add("typewriter");
+        let i = 0;
+        function type() {
+          if (i < text.length) {
+            element.innerHTML += text.charAt(i);
+            i++;
+            setTimeout(type, speed);
+          } else {
+            element.classList.remove("typewriter");
+          }
+        }
+        type();
+      }
+
+      // ==== Modal Logic ====
+      const modal = document.getElementById("birthdayModal");
+      const closeBtn = document.getElementById("closeModal");
+      const slides = document.querySelectorAll(".slide");
+      let currentSlide = 1;
+      function changeSlide(n) {
+        slides.forEach((sl) => sl.classList.remove("active"));
+        const el = document.getElementById(`slide${n}`);
+        if (el) el.classList.add("active");
+        currentSlide = n;
+      }
+      openBtn.addEventListener("click", () => {
+        audioClick.play();
+        if (modal.showModal) modal.showModal();
+        else modal.setAttribute("open", "");
+        const content = modal.querySelector(".modal-content");
+        if (content) content.focus();
+        createConfetti(150);
+        confettiActive = true;
+
+        const greet = document.getElementById("greeting-text");
+        typeWriterEffect(greet, "Selamat Ulang Tahun, Eca!", 120);
+      });
+      closeBtn.addEventListener("click", () => {
+        if (modal.close) modal.close();
+        else modal.removeAttribute("open");
+      });
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          if (modal.close) modal.close();
+          else modal.removeAttribute("open");
+        }
+        if (e.key === "ArrowRight" && currentSlide < slides.length)
+          changeSlide(currentSlide + 1);
+        if (e.key === "ArrowLeft" && currentSlide > 1)
+          changeSlide(currentSlide - 1);
+      });
+    </script>
+  </body>
+</html>
